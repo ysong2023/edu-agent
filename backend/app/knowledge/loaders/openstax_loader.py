@@ -1,4 +1,4 @@
-from datasets import load_dataset
+# from datasets import load_dataset  # Temporarily disabled - not using external datasets
 from typing import List, Dict, Any, Optional
 import logging
 from pathlib import Path
@@ -40,43 +40,9 @@ class OpenStaxLoader:
             # 加载数据集
             logger.info(f"加载OpenStax数据集: {self.dataset_name}")
             
-            try:
-                # 使用datasets库加载数据
-                ds = load_dataset(self.dataset_name)
-                logger.info(f"数据集加载成功，包含以下分割: {list(ds.keys())}")
-            except Exception as e:
-                logger.error(f"加载datasets失败: {e}")
-                # 如果失败，返回模拟数据用于测试
-                return self._create_mock_data(subjects)
-            
-            # 处理数据
-            processed_data = []
-            for split in ds.keys():
-                logger.info(f"处理数据分割: {split}")
-                for i, item in enumerate(ds[split]):
-                    # 过滤学科
-                    if subjects and not self._matches_subjects(item, subjects):
-                        continue
-                    
-                    # 处理文本内容
-                    processed_item = self._process_item(item)
-                    if processed_item:
-                        processed_data.append(processed_item)
-                    
-                    # 限制数据量（避免内存问题）
-                    if len(processed_data) >= 1000:
-                        logger.info("达到数据量限制，停止加载")
-                        break
-                
-                if len(processed_data) >= 1000:
-                    break
-            
-            # 缓存结果
-            with open(cache_file, 'wb') as f:
-                pickle.dump(processed_data, f)
-            
-            logger.info(f"成功加载 {len(processed_data)} 条OpenStax记录")
-            return processed_data
+            # 暂时不使用datasets库，直接返回模拟数据
+            logger.info("使用模拟数据代替datasets")
+            return self._create_mock_data(subjects)
             
         except Exception as e:
             logger.error(f"加载OpenStax数据集失败: {e}")
