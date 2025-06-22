@@ -13,9 +13,7 @@ services:
       - CLAUDE_MODEL=claude-3-5-sonnet-20241022
       - DEBUG=false
       - REDIS_URL=redis://redis:6379/0
-      - KNOWLEDGE_CACHE_DIR=/app/data/knowledge_cache
     volumes:
-      - backend_data:/app/data
       - backend_logs:/app/logs
     depends_on:
       - redis
@@ -95,7 +93,6 @@ services:
       - monitoring
 
 volumes:
-  backend_data:
   backend_logs:
   redis_data:
   prometheus_data:

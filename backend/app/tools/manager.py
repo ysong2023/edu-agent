@@ -1,12 +1,10 @@
 import json
-import asyncio
+import logging
 from pathlib import Path
 from typing import Dict, Any, List
-from anthropic.types.tool_use_block import ToolUseBlock
-import logging
+from anthropic.types import ToolUseBlock
 
 from app.tools.executors.python_executor import PythonExecutor
-from app.knowledge.manager import knowledge_manager
 
 logger = logging.getLogger(__name__)
 
@@ -14,25 +12,17 @@ logger = logging.getLogger(__name__)
 python_executor = PythonExecutor()
 
 def load_tool_schema(schema_name: str) -> Dict[str, Any]:
-    """Load tool schema"""
-    schema_path = Path(__file__).parent / "schema" / f"{schema_name}.json"
-    
-    if not schema_path.exists():
-        logger.error(f"Tool schema file not found: {schema_path}")
-        return {}
-    
+    """Load tool schema from JSON file"""
     try:
-        with open(schema_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+        schema_path = Path(__file__).parent / "schema" / f"{schema_name}.json"
+        with open(schema_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
     except Exception as e:
         logger.error(f"Failed to load tool schema {schema_name}: {e}")
         return {}
 
 def get_all_tool_schemas() -> List[Dict[str, Any]]:
-    """Get all tool schemas"""
-    schemas = []
-    
-    # Define all available tools - focused on education and visualization
+    """Get all available tool schemas (excluding knowledge_search)"""
     tool_names = [
         "education_context",
         "python_execute", 
@@ -40,49 +30,42 @@ def get_all_tool_schemas() -> List[Dict[str, Any]]:
         "math_visualize"
     ]
     
+    schemas = []
     for tool_name in tool_names:
         schema = load_tool_schema(tool_name)
         if schema:
             schemas.append(schema)
             logger.info(f"✅ Loaded tool schema: {tool_name}")
         else:
-            logger.warning(f"⚠️ Skipped invalid tool schema: {tool_name}")
+            logger.warning(f"❌ Failed to load tool schema: {tool_name}")
     
     logger.info(f"📦 Total loaded tools: {len(schemas)}")
     return schemas
 
 async def use_tool(tool_use_content: ToolUseBlock, model_info: Dict[str, str] = None) -> Any:
-    """Execute corresponding tool function based on tool name"""
-    
+    """Execute tool based on tool use content"""
     tool_name = tool_use_content.name
     tool_input = tool_use_content.input
     
-    # Enhanced logging with model information
     logger.info(f"🔧 Executing tool: {tool_name}")
     if model_info:
-        logger.info(f"🤖 Agent Model: {model_info.get('agent_model', 'claude-3.5-sonnet')}")
+        logger.info(f"🤖 Agent Model: {model_info.get('agent_model', 'unknown')}")
         logger.info(f"🔧 Tool Backend: {tool_name}")
-        logger.info(f"📊 Tool Call Context: {model_info.get('context', 'educational_session')}")
-    logger.debug(f"Tool input: {tool_input}")
+        logger.info(f"📊 Tool Call Context: {model_info.get('context', 'unknown')}")
     
-    try:
-        # Tool function mapping - education focused
-        if tool_name == "education_context":
-            return await _generate_education_context(tool_input, model_info)
-        elif tool_name == "python_execute":
-            return await _execute_python_code(tool_input, model_info)
-        elif tool_name == "physics_simulate":
-            return await _simulate_physics(tool_input, model_info)
-        elif tool_name == "math_visualize":
-            return await _visualize_math(tool_input, model_info)
-        else:
-            raise ValueError(f"Unknown tool: {tool_name}")
-    
-    except Exception as e:
-        logger.error(f"Tool execution failed {tool_name}: {e}")
+    # Route to appropriate tool function
+    if tool_name == "education_context":
+        return await _generate_education_context(tool_input, model_info)
+    elif tool_name == "python_execute":
+        return await _execute_python_code(tool_input, model_info)
+    elif tool_name == "physics_simulate":
+        return await _simulate_physics(tool_input, model_info)
+    elif tool_name == "math_visualize":
+        return await _visualize_math(tool_input, model_info)
+    else:
+        logger.error(f"Unknown tool: {tool_name}")
         return {
-            "error": f"Tool execution failed: {str(e)}",
-            "tool_name": tool_name,
+            "error": f"Unknown tool: {tool_name}",
             "success": False
         }
 
@@ -153,31 +136,6 @@ async def _execute_python_code(tool_input: Dict[str, Any], model_info: Dict[str,
             "success": False,
             "output": "",
             "plots": []
-        }
-
-async def _search_knowledge(tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Search knowledge base"""
-    query = tool_input.get("query", "")
-    category = tool_input.get("category", "all")
-    limit = tool_input.get("limit", 5)
-    
-    if not query.strip():
-        return {"error": "Search query cannot be empty", "success": False}
-    
-    try:
-        results = await knowledge_manager.search(
-            query=query,
-            category=category,
-            limit=limit
-        )
-        return results
-    
-    except Exception as e:
-        logger.error(f"Knowledge base search failed: {e}")
-        return {
-            "error": str(e),
-            "success": False,
-            "results": []
         }
 
 async def _simulate_physics(tool_input: Dict[str, Any], model_info: Dict[str, str] = None) -> Dict[str, Any]:

@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from app.core.config import settings
-from app.api.v1 import chat, knowledge
+from app.api.v1 import chat
 from app.core.claude_client import education_agent
 
 # Configure logging
@@ -28,7 +28,6 @@ app.add_middleware(
 
 # Register routes
 app.include_router(chat.router, prefix="/api/v1")
-app.include_router(knowledge.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
