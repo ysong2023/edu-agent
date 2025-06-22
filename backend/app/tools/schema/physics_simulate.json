@@ -1,0 +1,46 @@
+{
+  "name": "physics_simulate",
+  "description": "Simple physics simulation tool with basic templates. YOU still implement the sophisticated physics using your knowledge. You decide the approach, equations, and visualization style.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "scenario": {
+        "type": "string",
+        "description": "Physics scenario to simulate - you implement the physics equations and choose visualization approach"
+      },
+      "parameters": {
+        "type": "object",
+        "description": "Simulation parameters",
+        "properties": {
+          "initial_velocity": {
+            "type": "number",
+            "description": "Initial velocity (m/s)"
+          },
+          "angle": {
+            "type": "number",
+            "description": "Launch angle (degrees)"
+          },
+          "mass": {
+            "type": "number",
+            "description": "Object mass (kg)"
+          },
+          "height": {
+            "type": "number",
+            "description": "Initial height (m)"
+          },
+          "gravity": {
+            "type": "number",
+            "description": "Gravitational acceleration (m/s²)",
+            "default": 9.81
+          },
+          "time_duration": {
+            "type": "number",
+            "description": "Simulation duration (seconds)",
+            "default": 10
+          }
+        }
+      }
+    },
+    "required": ["scenario"]
+  }
+} 

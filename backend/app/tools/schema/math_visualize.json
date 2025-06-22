@@ -1,0 +1,46 @@
+{
+  "name": "math_visualize",
+  "description": "Simple math visualization tool with basic templates. YOU implement the sophisticated mathematics using your knowledge. You decide the mathematical approach, complexity, and visualization style.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "concept": {
+        "type": "string",
+        "description": "Mathematical concept to visualize - you implement the mathematics and choose visualization approach"
+      },
+      "parameters": {
+        "type": "object",
+        "description": "Visualization parameters",
+        "properties": {
+          "function": {
+            "type": "string",
+            "description": "Mathematical function expression, such as 'x**2', 'sin(x)', 'exp(x)', etc."
+          },
+          "range": {
+            "type": "array",
+            "description": "x-axis range [start, end]",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "point": {
+            "type": "number",
+            "description": "Specific point's x-coordinate (for derivatives, tangent lines, etc.)"
+          },
+          "steps": {
+            "type": "integer",
+            "description": "Number of calculation steps",
+            "default": 1000
+          },
+          "title": {
+            "type": "string",
+            "description": "Chart title"
+          }
+        }
+      }
+    },
+    "required": ["concept"]
+  }
+} 

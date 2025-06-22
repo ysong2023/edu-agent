@@ -1,0 +1,24 @@
+{
+  "name": "education_context",
+  "description": "Signals you to generate educational background using your extensive knowledge. Provide historical context, fundamental principles, and real-world connections based on your understanding. You decide the depth and approach.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "topic": {
+        "type": "string",
+        "description": "The physics or mathematics topic to provide context for"
+      },
+      "context_type": {
+        "type": "string",
+        "enum": ["historical_background", "physical_principles", "related_knowledge", "complete"],
+        "description": "Type of educational context to generate"
+      },
+      "target_audience": {
+        "type": "string",
+        "enum": ["high_school", "undergraduate", "graduate", "general"],
+        "description": "Target audience level for the explanation"
+      }
+    },
+    "required": ["topic", "context_type"]
+  }
+} 
