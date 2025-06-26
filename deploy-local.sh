@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# Education AI Agent Production Deployment Script
+# Education AI Agent Local Development Deployment Script
 set -e
 
-# Production docker-compose file
-COMPOSE_FILE="docker/docker-compose.prod.yml"
+# Local docker-compose file
+COMPOSE_FILE="docker/docker-compose.yml"
 
 # Color definitions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Print colored messages
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -47,7 +46,7 @@ check_requirements() {
     print_success "System requirements check passed"
 }
 
-# Create environment variables file
+# Setup environment variables
 setup_env() {
     print_info "Setting up environment variables..."
     
@@ -79,62 +78,26 @@ setup_env() {
         
         # Update .env file
         if grep -q "ANTHROPIC_API_KEY=" .env; then
-            # Replace existing line
             sed -i "s/ANTHROPIC_API_KEY=.*/ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY/" .env
         else
-            # Add new line
             echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
         fi
         
         print_success "API key has been saved to .env file"
     fi
     
-    # Prompt for other optional settings
-    echo ""
-    print_info "Optional settings (press Enter to use defaults):"
-    
-    echo -n "Claude Model [claude-3-5-sonnet-20241022]: "
-    read CLAUDE_MODEL_INPUT
-    if [ ! -z "$CLAUDE_MODEL_INPUT" ]; then
-        if grep -q "CLAUDE_MODEL=" .env; then
-            sed -i "s/CLAUDE_MODEL=.*/CLAUDE_MODEL=$CLAUDE_MODEL_INPUT/" .env
-        else
-            echo "CLAUDE_MODEL=$CLAUDE_MODEL_INPUT" >> .env
-        fi
-    fi
-    
-    echo -n "Debug mode [false]: "
-    read DEBUG_INPUT
-    if [ ! -z "$DEBUG_INPUT" ]; then
-        if grep -q "DEBUG=" .env; then
-            sed -i "s/DEBUG=.*/DEBUG=$DEBUG_INPUT/" .env
-        else
-            echo "DEBUG=$DEBUG_INPUT" >> .env
-        fi
-    fi
-    
     print_success "Environment variables setup completed"
 }
 
-# Pull latest images (for production deployment)
-pull_images() {
-    print_info "Pulling latest Docker images from registry..."
-    
-    # Pull latest images
-    docker-compose -f $COMPOSE_FILE --env-file .env pull
-    
-    print_success "Image pull completed"
-}
-
-# Start services
+# Build and start services
 start_services() {
-    print_info "Starting production services..."
+    print_info "Building and starting local development services..."
     
     # Stop existing services
     docker-compose -f $COMPOSE_FILE --env-file .env down 2>/dev/null || true
     
-    # Start services
-    docker-compose -f $COMPOSE_FILE --env-file .env up -d
+    # Build and start services
+    docker-compose -f $COMPOSE_FILE --env-file .env up --build -d
     
     print_success "Services started successfully"
 }
@@ -156,14 +119,16 @@ wait_for_services() {
     
     if [ $timeout -le 0 ]; then
         print_error "Backend service startup timeout"
+        print_info "Checking backend logs..."
+        docker-compose -f $COMPOSE_FILE --env-file .env logs backend
         exit 1
     fi
     
-    # Wait for frontend service (production runs on port 80)
+    # Wait for frontend service (development runs on port 3000)
     print_info "Waiting for frontend service..."
     timeout=60
     while [ $timeout -gt 0 ]; do
-        if curl -f http://localhost >/dev/null 2>&1; then
+        if curl -f http://localhost:3000 >/dev/null 2>&1; then
             break
         fi
         sleep 2
@@ -179,32 +144,38 @@ wait_for_services() {
 
 # Show deployment information
 show_deployment_info() {
-    print_success "Deployment completed!"
+    print_success "Local deployment completed!"
     echo ""
-    echo "Access URLs:"
-    echo "  Frontend:  http://localhost"
-    echo "  Backend API: http://localhost:8000"
-    echo "  API Docs:  http://localhost:8000/docs"
+    echo "🌐 Access URLs:"
+    echo "  Frontend:     http://localhost:3000"
+    echo "  Backend API:  http://localhost:8000"
+    echo "  API Docs:     http://localhost:8000/docs"
+    echo "  Health Check: http://localhost:8000/health"
     echo ""
-    echo "Management Commands:"
+    echo "🔧 Management Commands:"
     echo "  View logs:    docker-compose -f $COMPOSE_FILE --env-file .env logs -f"
     echo "  Stop services: docker-compose -f $COMPOSE_FILE --env-file .env down"
     echo "  Restart:      docker-compose -f $COMPOSE_FILE --env-file .env restart"
     echo "  Check status: docker-compose -f $COMPOSE_FILE --env-file .env ps"
+    echo ""
+    echo "🧪 Test with questions like:"
+    echo "  - Explain the brachistochrone problem"
+    echo "  - Show me how magnets work"
+    echo "  - Demonstrate the Central Limit Theorem"
 }
 
 # Main function
 main() {
-    print_info "Starting Education AI Agent system deployment..."
+    print_info "🚀 Starting Education AI Agent local development deployment..."
+    echo ""
     
     check_requirements
     setup_env
-    pull_images
     start_services
     wait_for_services
     show_deployment_info
     
-    print_success "Deployment completed!"
+    print_success "🎉 Local deployment completed!"
 }
 
 # If running this script directly

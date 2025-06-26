@@ -27,8 +27,8 @@ services:
   # Frontend service
   frontend:
     image: ghcr.io/ysong2023/edu-agent-frontend:latest
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -37,6 +37,35 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    profiles:
+      - ssl
 
   # Redis cache
   redis:
@@ -54,6 +83,7 @@ volumes:
   backend_data:
   backend_logs:
   redis_data:
+  certbot_www:
 
 networks:
   default:
