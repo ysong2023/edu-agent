@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Education AI Agent One-Click Deployment Script
+# Education AI Agent Production Deployment Script
 set -e
+
+# Production docker-compose file
+COMPOSE_FILE="docker/docker-compose.prod.yml"
 
 # Color definitions
 RED='\033[0;31m'
@@ -48,50 +51,90 @@ check_requirements() {
 setup_env() {
     print_info "Setting up environment variables..."
     
+    # Check if .env file exists
     if [ ! -f .env ]; then
+        print_info "Creating .env file from template..."
         if [ -f env.example ]; then
             cp env.example .env
-            print_warning ".env file created. Please edit and add your API keys"
-            print_warning "Especially need to set: ANTHROPIC_API_KEY"
         else
             print_error "env.example file not found"
             exit 1
         fi
     fi
     
-    # Check required environment variables
-    if ! grep -q "ANTHROPIC_API_KEY=.*[^[:space:]]" .env; then
-        print_error "Please set ANTHROPIC_API_KEY in the .env file"
-        exit 1
+    # Check if ANTHROPIC_API_KEY is set
+    if ! grep -q "ANTHROPIC_API_KEY=.*[^[:space:]]" .env 2>/dev/null; then
+        print_warning "ANTHROPIC_API_KEY not found in .env file"
+        
+        # Prompt for API key
+        echo ""
+        echo -n "Please enter your Anthropic API Key: "
+        read -s ANTHROPIC_API_KEY
+        echo ""
+        
+        if [ -z "$ANTHROPIC_API_KEY" ]; then
+            print_error "API key cannot be empty"
+            exit 1
+        fi
+        
+        # Update .env file
+        if grep -q "ANTHROPIC_API_KEY=" .env; then
+            # Replace existing line
+            sed -i "s/ANTHROPIC_API_KEY=.*/ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY/" .env
+        else
+            # Add new line
+            echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
+        fi
+        
+        print_success "API key has been saved to .env file"
+    fi
+    
+    # Prompt for other optional settings
+    echo ""
+    print_info "Optional settings (press Enter to use defaults):"
+    
+    echo -n "Claude Model [claude-3-5-sonnet-20241022]: "
+    read CLAUDE_MODEL_INPUT
+    if [ ! -z "$CLAUDE_MODEL_INPUT" ]; then
+        if grep -q "CLAUDE_MODEL=" .env; then
+            sed -i "s/CLAUDE_MODEL=.*/CLAUDE_MODEL=$CLAUDE_MODEL_INPUT/" .env
+        else
+            echo "CLAUDE_MODEL=$CLAUDE_MODEL_INPUT" >> .env
+        fi
+    fi
+    
+    echo -n "Debug mode [false]: "
+    read DEBUG_INPUT
+    if [ ! -z "$DEBUG_INPUT" ]; then
+        if grep -q "DEBUG=" .env; then
+            sed -i "s/DEBUG=.*/DEBUG=$DEBUG_INPUT/" .env
+        else
+            echo "DEBUG=$DEBUG_INPUT" >> .env
+        fi
     fi
     
     print_success "Environment variables setup completed"
 }
 
-# Build images
-build_images() {
-    print_info "Building Docker images..."
+# Pull latest images (for production deployment)
+pull_images() {
+    print_info "Pulling latest Docker images from registry..."
     
-    # Build backend image
-    print_info "Building backend image..."
-    docker build -f docker/backend/Dockerfile -t edu-agent-backend:latest .
+    # Pull latest images
+    docker-compose -f $COMPOSE_FILE pull
     
-    # Build frontend image
-    print_info "Building frontend image..."
-    docker build -f docker/frontend/Dockerfile -t edu-agent-frontend:latest .
-    
-    print_success "Image build completed"
+    print_success "Image pull completed"
 }
 
 # Start services
 start_services() {
-    print_info "Starting services..."
+    print_info "Starting production services..."
     
     # Stop existing services
-    docker-compose down 2>/dev/null || true
+    docker-compose -f $COMPOSE_FILE down 2>/dev/null || true
     
     # Start services
-    docker-compose up -d
+    docker-compose -f $COMPOSE_FILE up -d
     
     print_success "Services started successfully"
 }
@@ -116,11 +159,11 @@ wait_for_services() {
         exit 1
     fi
     
-    # Wait for frontend service
+    # Wait for frontend service (production runs on port 80)
     print_info "Waiting for frontend service..."
     timeout=60
     while [ $timeout -gt 0 ]; do
-        if curl -f http://localhost:3000/health >/dev/null 2>&1; then
+        if curl -f http://localhost >/dev/null 2>&1; then
             break
         fi
         sleep 2
@@ -139,15 +182,15 @@ show_deployment_info() {
     print_success "Deployment completed!"
     echo ""
     echo "Access URLs:"
-    echo "  Frontend:  http://localhost:3000"
+    echo "  Frontend:  http://localhost"
     echo "  Backend API: http://localhost:8000"
     echo "  API Docs:  http://localhost:8000/docs"
     echo ""
     echo "Management Commands:"
-    echo "  View logs:    docker-compose logs -f"
-    echo "  Stop services: docker-compose down"
-    echo "  Restart:      docker-compose restart"
-    echo "  Check status: docker-compose ps"
+    echo "  View logs:    docker-compose -f $COMPOSE_FILE logs -f"
+    echo "  Stop services: docker-compose -f $COMPOSE_FILE down"
+    echo "  Restart:      docker-compose -f $COMPOSE_FILE restart"
+    echo "  Check status: docker-compose -f $COMPOSE_FILE ps"
 }
 
 # Main function
@@ -156,7 +199,7 @@ main() {
     
     check_requirements
     setup_env
-    build_images
+    pull_images
     start_services
     wait_for_services
     show_deployment_info

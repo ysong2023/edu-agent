@@ -3,6 +3,7 @@ import tempfile
 import os
 import base64
 import json
+import uuid
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 import logging
@@ -220,6 +221,7 @@ import random
 import statistics
 import time
 from datetime import datetime, timedelta
+import uuid
 
 # Matplotlib with clean configuration
 import matplotlib
@@ -308,18 +310,27 @@ def save_plot_as_base64(fig=None, filename=None, dpi=150):
     
     fig.tight_layout()
     
-    buffer = BytesIO()
-    fig.savefig(buffer, format='png', dpi=dpi, bbox_inches='tight', 
+    # Save to server instead of returning base64
+    plot_id = str(uuid.uuid4())
+    filepath = f"plot_{plot_id}.png"
+    
+    # Save plot to the output directory
+    fig.savefig(filepath, format='png', dpi=dpi, bbox_inches='tight', 
                 facecolor='white', edgecolor='none')
-    buffer.seek(0)
-    img_base64 = base64.b64encode(buffer.getvalue()).decode()
-    buffer.close()
+    
+    # Return plot metadata instead of base64
+    plot_info = {
+        "plot_id": plot_id,
+        "filename": filepath,
+        "url": f"/api/plots/{filepath}",
+        "type": "static"
+    }
     
     if filename:
         with open(f"{filename}.json", "w") as f:
-            json.dump({"image": img_base64, "type": "static"}, f)
+            json.dump(plot_info, f)
     
-    return img_base64
+    return plot_info
 
 # Enhanced plt.show() function
 original_show = plt.show
@@ -378,7 +389,7 @@ print(f"\\nExecution completed! Generated {plot_counter} visualizations.")
     
     def _process_result(self, result: subprocess.CompletedProcess, 
                        include_plots: bool) -> Dict[str, Any]:
-        """Process execution results"""
+        """Process execution results - optimized for token efficiency"""
         response = {
             "success": result.returncode == 0,
             "output": result.stdout,
@@ -387,13 +398,22 @@ print(f"\\nExecution completed! Generated {plot_counter} visualizations.")
         }
         
         if include_plots:
-            # Find generated plot files
+            # Find generated plot files and return URLs instead of Base64
             for json_file in self.output_dir.glob("*.json"):
                 try:
                     with open(json_file, 'r') as f:
                         plot_data = json.load(f)
-                        response["plots"].append(plot_data)
-                    # Delete temporary file
+                        
+                        # Only include essential metadata for Claude
+                        plot_metadata = {
+                            "url": plot_data.get("url", ""),
+                            "type": plot_data.get("type", "static"),
+                            "plot_id": plot_data.get("plot_id", ""),
+                            "description": "Generated visualization"
+                        }
+                        response["plots"].append(plot_metadata)
+                        
+                    # Delete temporary metadata file
                     json_file.unlink()
                 except Exception as e:
                     logger.warning(f"Failed to process plot file: {e}")

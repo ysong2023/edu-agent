@@ -13,7 +13,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
-    history: Optional[List[Dict[str, str]]] = Field(default=[], description="Conversation history")
+    history: Optional[List[Dict[str, Any]]] = Field(default=[], description="Conversation history")
 
 class ToolResult(BaseModel):
     tool_name: str = Field(..., description="工具名称")
@@ -46,37 +46,49 @@ async def chat_endpoint(request: ChatRequest):
         
         logger.info(f"📝 Cleaned history: {len(cleaned_history)} messages")
         
-        # Process message with Claude
+                # Process message with Claude
         response = await education_agent.process_message(
             message=request.message,
             history=cleaned_history
         )
         
+        logger.info(f"🔍 Claude response keys: {list(response.keys())}")
+        logger.info(f"🔍 Response success: {response.get('success', 'unknown')}")
+        
         # Handle error responses
-        if response.get("type") == "error":
-            logger.error(f"AI processing error: {response.get('error')}")
+        if not response.get("success", False):
+            error_msg = response.get("error", "Unknown error occurred")
+            logger.error(f"AI processing error: {error_msg}")
             raise HTTPException(
                 status_code=500,
-                detail=response.get("error", "Unknown error occurred")
+                detail=error_msg
             )
         
         # Extract plots from tool results
         plots = []
-        for tool_result in response.get("tool_results", []):
+        tool_results = response.get("tool_results", [])
+        for tool_result in tool_results:
             if tool_result.get("tool_name") == "python_execute":
                 result_data = tool_result.get("result", {})
                 if "plots" in result_data:
                     plots.extend(result_data["plots"])
         
+        # Get response text with fallbacks
+        response_text = response.get("response", "")
+        if not response_text:
+            response_text = response.get("text", "")
+        if not response_text:
+            response_text = "No response generated"
+        
         # Return response in format expected by frontend
         final_response = {
-            "response": response.get("response", response.get("text", "No response generated")),
+            "message": response_text,
             "plots": plots,
-            "tool_results": response.get("tool_results", []),
+            "tool_results": tool_results,
             "type": response.get("type", "assistant")
         }
         
-        logger.info(f"✅ Returning response with {len(plots)} plots and {len(final_response['response'])} chars of text")
+        logger.info(f"✅ Returning response with {len(plots)} plots and {len(final_response['message'])} chars of text")
         return final_response
         
     except HTTPException:

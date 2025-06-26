@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     )
     
     # Database Configuration
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = ""  # Leave empty to disable Redis and use in-memory cache
     
     # Knowledge Base Configuration
     knowledge_cache_dir: str = "./data/knowledge_cache"
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     
     class Config:
         # Fix: Use Pydantic V2 configuration syntax
-        env_file = Path(__file__).parent.parent.parent / ".env"
+        env_file = Path(__file__).parent.parent.parent.parent / ".env"
         case_sensitive = False
         env_file_encoding = 'utf-8'
         # Allow extra fields
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
 
 # Manually load .env file at import time to ensure environment variables are read correctly
 from dotenv import load_dotenv
-env_path = Path(__file__).parent.parent.parent / ".env"
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 

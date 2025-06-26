@@ -1,6 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import logging
+import os
+from pathlib import Path
 from app.core.config import settings
 from app.api.v1 import chat
 from app.core.claude_client import education_agent
@@ -25,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create plots directory if it doesn't exist
+plots_dir = Path("./data/temp")
+plots_dir.mkdir(parents=True, exist_ok=True)
 
 # Register routes
 app.include_router(chat.router, prefix="/api/v1")
@@ -77,6 +85,26 @@ async def startup_event():
 async def shutdown_event():
     """Application shutdown event"""
     logger.info(f"🛑 {settings.app_name} shutting down...")
+
+@app.get("/api/plots/{filename}")
+async def serve_plot(filename: str):
+    """Serve generated plot images"""
+    file_path = plots_dir / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Plot not found")
+    
+    # Security check: ensure file is within plots directory
+    try:
+        file_path.resolve().relative_to(plots_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return FileResponse(
+        path=file_path,
+        media_type="image/png",
+        filename=filename
+    )
 
 if __name__ == "__main__":
     import uvicorn

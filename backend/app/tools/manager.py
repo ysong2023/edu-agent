@@ -207,105 +207,174 @@ async def _visualize_math(tool_input: Dict[str, Any], model_info: Dict[str, str]
         logger.error(f"Math visualization failed: {e}")
         return {"error": str(e), "success": False}
 
-# Simple, clean templates - no hardcoded physics knowledge
 def _get_simple_projectile_template() -> str:
+    """Simple projectile motion template"""
     return """
-# Basic projectile motion template
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI fill in the physics details
-print("🚀 Projectile motion simulation - AI will provide the physics implementation")
-# AI should implement the actual physics equations and visualization
+# Simple projectile motion simulation
+t = np.linspace(0, 10, 100)
+x = 10 * t
+y = 50 * t - 0.5 * 9.81 * t**2
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('Projectile Motion')
+plt.xlabel('Horizontal Distance (m)')
+plt.ylabel('Height (m)')
+plt.grid(True)
+plt.show()
 """
 
 def _get_simple_pendulum_template() -> str:
+    """Simple pendulum template"""
     return """
-# Basic pendulum template  
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI fill in the physics details
-print("⚖️ Pendulum simulation - AI will provide the physics implementation")
-# AI should implement the actual pendulum equations and visualization
+# Simple pendulum motion
+t = np.linspace(0, 10, 1000)
+theta = 0.2 * np.cos(np.sqrt(9.81/1.0) * t)
+
+plt.figure(figsize=(10, 6))
+plt.plot(t, theta)
+plt.title('Simple Pendulum Motion')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (rad)')
+plt.grid(True)
+plt.show()
 """
 
 def _get_simple_wave_template() -> str:
+    """Simple wave template"""
     return """
-# Basic wave template
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI fill in the wave physics
-print("🌊 Wave simulation - AI will provide the wave physics implementation")
-# AI should implement the actual wave equations and visualization
+# Simple wave
+x = np.linspace(0, 4*np.pi, 1000)
+y = np.sin(x)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('Simple Wave')
+plt.xlabel('Position')
+plt.ylabel('Amplitude')
+plt.grid(True)
+plt.show()
 """
 
 def _get_generic_physics_template() -> str:
+    """Generic physics template"""
     return """
-# Generic physics simulation template
 import numpy as np
 import matplotlib.pyplot as plt
 
-# AI will implement the specific physics
-print("🔬 Physics simulation - AI will provide the specific implementation")
-# AI should determine and implement the appropriate physics
+# Generic physics visualization
+x = np.linspace(0, 10, 100)
+y = x**2
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('Physics Visualization')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.grid(True)
+plt.show()
 """
 
 def _get_simple_derivative_template() -> str:
+    """Simple derivative template"""
     return """
-# Basic derivative visualization
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI implement the mathematical details
-print("📈 Derivative visualization - AI will provide the mathematical implementation")
-# AI should implement the specific derivative concepts
+# Function and its derivative
+x = np.linspace(-5, 5, 1000)
+f = x**2
+df = 2*x
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, f, label='f(x) = x²')
+plt.plot(x, df, label="f'(x) = 2x")
+plt.title('Function and Derivative')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.grid(True)
+plt.show()
 """
 
 def _get_simple_integral_template() -> str:
+    """Simple integral template"""
     return """
-# Basic integral visualization
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI implement the mathematical details
-print("📊 Integral visualization - AI will provide the mathematical implementation")  
-# AI should implement the specific integral concepts
+# Function and area under curve
+x = np.linspace(0, 5, 1000)
+y = x**2
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, label='f(x) = x²')
+plt.fill_between(x[:500], y[:500], alpha=0.3, label='Integral area')
+plt.title('Function and Integral')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.grid(True)
+plt.show()
 """
 
 def _get_simple_function_template() -> str:
+    """Simple function template"""
     return """
-# Basic function visualization
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Let AI implement the function details
-print("📉 Function visualization - AI will provide the mathematical implementation")
-# AI should implement the specific function analysis
+# Simple function
+x = np.linspace(-10, 10, 1000)
+y = np.sin(x)/x
+y[x==0] = 1  # Handle division by zero
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('Mathematical Function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.show()
 """
 
 def _get_generic_math_template() -> str:
+    """Generic math template"""
     return """
-# Generic math visualization template
 import numpy as np
 import matplotlib.pyplot as plt
 
-# AI will implement the specific mathematics
-print("🧮 Mathematical visualization - AI will provide the specific implementation")
-# AI should determine and implement the appropriate mathematics
+# Generic mathematical visualization
+x = np.linspace(-5, 5, 1000)
+y = np.exp(-x**2)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y)
+plt.title('Mathematical Visualization')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.grid(True)
+plt.show()
 """
 
 def get_tool_info() -> Dict[str, Any]:
     """Get information about available tools"""
     return {
-        "available_tools": len(get_all_tool_schemas()),
-        "tool_types": ["education_context", "python_execute", "physics_simulate", "math_visualize"],
-        "execution_environment": "Safe Python sandbox with scientific libraries",
-        "capabilities": [
-            "Educational content generation (AI-driven)",
-            "Python code execution with visualization",  
-            "Physics simulations (AI-implemented)",
-            "Mathematical visualizations (AI-implemented)"
-        ]
+        "available_tools": [
+            "education_context",
+            "python_execute",
+            "physics_simulate", 
+            "math_visualize"
+        ],
+        "python_libraries": python_executor.get_available_libraries(),
+        "total_tools": 4
     } 

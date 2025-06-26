@@ -87,6 +87,16 @@ You are an advanced Physics and Mathematics Teaching Agent that inspires deep un
 - Include quantitative analysis when appropriate
 - Balance accuracy with accessibility
 
+## MATHEMATICAL FORMATTING REQUIREMENTS:
+**ALWAYS use proper LaTeX format for mathematical expressions:**
+- Use `$...$` for inline math: `$F = ma$`, `$E = mc^2$`
+- Use `$$...$$` for display math equations:
+**Examples of correct formatting:**
+- Position: `$x = v_0 t + \frac{1}{2}at^2$`
+- Velocity: `$v = v_0 + at$`
+- Energy: `$E = \frac{1}{2}mv^2 + mgh$`
+- Wave equation: `$$\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}$$`
+
 ## CRITICAL REQUIREMENTS:
 1. **MUST call education_context tool FIRST**
 2. **MUST call python_execute tool SECOND with YOUR implementation**
@@ -193,16 +203,16 @@ Remember: You are the expert. Trust your knowledge to make the best educational 
                 tool_result = await use_tool(content, model_info)
                 tool_results.append({
                     "tool_name": content.name,
-                    "result": tool_result
+                    "result": tool_result  # Store original result for frontend
                 })
                 
-                # Add tool result to conversation
+                # Add tool result to conversation (optimized for Claude)
                 conversation_messages.append({
                     "role": "user",
                     "content": [{
                         "type": "tool_result",
                         "tool_use_id": content.id,
-                        "content": str(tool_result)
+                        "content": self._optimize_tool_result_for_claude(tool_result)
                     }]
                 })
         
@@ -230,10 +240,10 @@ Remember: You are the expert. Trust your knowledge to make the best educational 
                     additional_tool_result = await use_tool(content, model_info)
                     tool_results.append({
                         "tool_name": content.name,
-                        "result": additional_tool_result
+                        "result": additional_tool_result  # Store original result for frontend
                     })
                     
-                    # Add additional tool result to conversation
+                    # Add additional tool result to conversation (optimized for Claude)
                     conversation_messages.append({
                         "role": "assistant",
                         "content": follow_up_response.content
@@ -243,7 +253,7 @@ Remember: You are the expert. Trust your knowledge to make the best educational 
                         "content": [{
                             "type": "tool_result",
                             "tool_use_id": content.id,
-                            "content": str(additional_tool_result)
+                            "content": self._optimize_tool_result_for_claude(additional_tool_result)
                         }]
                     })
                     
@@ -283,6 +293,41 @@ Remember: You are the expert. Trust your knowledge to make the best educational 
         except Exception as e:
             logger.error(f"API key validation failed: {e}")
             return False
+
+    def _optimize_tool_result_for_claude(self, tool_result: Any) -> str:
+        """Optimize tool result for Claude API - remove heavy data, keep only metadata"""
+        if isinstance(tool_result, dict):
+            # If this is a python execution result with plots
+            if "plots" in tool_result and tool_result["plots"]:
+                plot_count = len(tool_result["plots"])
+                plot_types = [p.get("type", "static") for p in tool_result["plots"]]
+                
+                # Create lightweight summary for Claude
+                optimized_result = {
+                    "success": tool_result.get("success", False),
+                    "output": tool_result.get("output", "")[:500] + "..." if len(tool_result.get("output", "")) > 500 else tool_result.get("output", ""),
+                    "plot_count": plot_count,
+                    "plot_types": plot_types,
+                    "visualization_generated": True,
+                    "plots_available": "Images have been generated and are available for display"
+                }
+                
+                if tool_result.get("error"):
+                    optimized_result["error"] = tool_result["error"]
+                
+                return str(optimized_result)
+            
+            # For other tool results, limit the size
+            result_str = str(tool_result)
+            if len(result_str) > 1000:
+                return result_str[:1000] + "... [truncated for efficiency]"
+            return result_str
+        
+        # For non-dict results, convert to string and limit size
+        result_str = str(tool_result)
+        if len(result_str) > 1000:
+            return result_str[:1000] + "... [truncated for efficiency]"
+        return result_str
 
 # Global instance
 education_agent = EducationAgent() 
