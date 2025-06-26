@@ -1,232 +1,342 @@
-# 教育AI代理系统 (Education AI Agent)
+# Education AI Agent
 
-一个基于Claude AI的智能教育系统，专注于数学和物理学习，提供交互式问答、可视化和代码执行功能。
+[![CI/CD Pipeline](https://github.com/ysong2023/edu-agent/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ysong2023/edu-agent/actions/workflows/ci-cd.yml)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![React](https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Claude AI](https://img.shields.io/badge/Claude%20AI-FF6B35?style=flat&logo=anthropic&logoColor=white)](https://www.anthropic.com/)
 
-## 🚀 功能特点
+An intelligent education system powered by Claude AI, specializing in mathematics and physics learning with interactive Q&A, advanced visualizations, and secure code execution capabilities.
 
-- **智能问答**：基于Claude AI的自然语言理解和回答
-- **可视化支持**：数学公式渲染、图形绘制、物理模拟
-- **代码执行**：安全的Python代码执行环境
-- **知识检索**：智能知识库搜索和上下文提供
-- **现代化UI**：响应式Web界面，优秀的用户体验
+## 🌟 Features
 
-## 🏗️ 技术架构
+### Core Capabilities
+- **🤖 AI-Powered Learning**: Advanced natural language understanding using Claude 3.5 Sonnet
+- **📊 Dynamic Visualizations**: Real-time mathematical plotting and physics simulations
+- **🔬 Interactive Code Execution**: Secure Python environment with scientific computing libraries
+- **📐 LaTeX Math Rendering**: Professional mathematical formula display with KaTeX
+- **💾 Persistent Conversations**: Local storage with conversation history management
+- **🎨 Modern UI/UX**: Responsive design with Markdown support and syntax highlighting
 
-### 后端
-- **FastAPI**: 高性能Web框架
-- **Anthropic Claude**: AI模型API
-- **Redis**: 缓存和会话管理
-- **Python**: 科学计算生态系统
+### Educational Tools
+- **Mathematical Modeling**: Calculus, algebra, statistics, and advanced mathematics
+- **Physics Simulations**: Mechanics, thermodynamics, electromagnetism, and quantum physics
+- **Data Visualization**: Interactive plots, animations, and scientific diagrams
+- **Historical Context**: Rich educational background and discovery stories
 
-### 前端
-- **React**: 现代化前端框架
-- **Nginx**: 静态文件服务和反向代理
+## 🏗️ Architecture
 
-### 基础设施
-- **Docker**: 容器化部署
-- **GitHub Actions**: CI/CD流水线
-- **Docker Compose**: 多容器编排
+### System Overview
+```
+┌──────────────────┐    ┌──────────────────┐    ┌───────────────────┐
+│   React Frontend │    │  FastAPI Backend │    │   Claude AI API   │
+│                  │◄──►│                  │◄──►│                   │
+│  • UI Components │    │  • REST API      │    │  • AI Processing  │
+│  • State Mgmt    │    │  • Tool Manager  │    │  • NLP & Reasoning│
+│  • Markdown      │    │  • Code Executor │    │  • Content Gen    │
+└──────────────────┘    └──────────────────┘    └───────────────────┘
+         │                       │                       
+         │              ┌─────────────────┐              
+         └─────────────►│   Redis Cache   │              
+                        │                 │              
+                        │  • Sessions     │              
+                        │  • Tool Results │              
+                        └─────────────────┘              
+```
 
-## 📦 快速开始
+### Technology Stack
 
-### 方式一：一键部署（推荐）
+**Backend Services**
+- **FastAPI**: High-performance async web framework
+- **Anthropic Claude**: State-of-the-art AI model (Claude 3.5 Sonnet)
+- **Redis**: In-memory caching and session management
+- **Python Ecosystem**: NumPy, Matplotlib, SciPy, SymPy for scientific computing
 
-1. **克隆仓库**
+**Frontend Application**
+- **React 18**: Modern frontend framework with hooks
+- **React Markdown**: Full Markdown rendering with LaTeX support
+- **KaTeX**: Mathematical formula rendering
+- **React Syntax Highlighter**: Code syntax highlighting
+
+**Infrastructure & DevOps**
+- **Docker**: Containerized deployment with multi-stage builds
+- **GitHub Actions**: Automated CI/CD pipeline with container registry
+- **Nginx**: High-performance reverse proxy and static file serving
+- **Docker Compose**: Multi-container orchestration
+
+## 📁 Project Structure
+
+```
+edu-agent/
+├── backend/                    # FastAPI Backend Service
+│   ├── app/
+│   │   ├── api/v1/            # REST API endpoints
+│   │   ├── core/              # Claude AI integration & config
+│   │   ├── services/          # Business logic
+│   │   └── tools/             # AI tools & code execution
+│   ├── tests/                 # Test suite
+│   └── requirements.txt
+├── frontend/                  # React Frontend
+│   ├── src/
+│   │   ├── App.jsx           # Main component
+│   │   └── styles/           # CSS styles
+│   └── package.json
+├── docker/                    # Docker configuration
+│   ├── backend/Dockerfile
+│   ├── frontend/Dockerfile
+│   ├── docker-compose.yml    # Development
+│   └── docker-compose.prod.yml # Production
+├── .github/workflows/         # CI/CD pipeline
+├── deploy.sh                  # Production deployment
+└── .env.example               # Environment template
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Docker**: Version 20.10 or higher
+- **Docker Compose**: Version 2.0 or higher
+- **Anthropic API Key**: Required for Claude AI integration
+
+### Production Deployment (Recommended)
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/ysong2023/edu-agent.git
    cd edu-agent
    ```
 
-2. **设置环境变量**
-   ```bash
-   cp env.example .env
-   # 编辑 .env 文件，设置你的 ANTHROPIC_API_KEY
-   ```
-
-3. **一键部署**
+2. **Run the deployment script**
    ```bash
    chmod +x deploy.sh
    ./deploy.sh
    ```
+   
+   The script will interactively prompt for:
+   - Anthropic API Key (required)
+   - Claude Model selection (optional)
+   - Debug mode settings (optional)
 
-4. **访问应用**
-   - 前端界面: http://localhost:3000
-   - 后端API: http://localhost:8000
-   - API文档: http://localhost:8000/docs
+3. **Access the application**
+   - **Frontend**: http://localhost
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
 
-### 方式二：手动部署
+### Development Environment
 
-#### 开发环境
-
-1. **后端开发**
+1. **Start development services**
    ```bash
-   cd backend
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload
+   docker-compose -f docker/docker-compose.yml up -d
    ```
 
-2. **前端开发**
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
+2. **Access development endpoints**
+   - **Frontend**: http://localhost:3000
+   - **Backend**: http://localhost:8000
 
-#### 生产环境
+### Manual Installation
 
-1. **使用Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
+<details>
+<summary>Click to expand manual installation instructions</summary>
 
-2. **使用预构建镜像**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
+#### Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
-## 🔧 配置说明
+# Set environment variables
+export ANTHROPIC_API_KEY="your_api_key_here"
 
-### 环境变量
+# Start the server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-创建 `.env` 文件并配置以下变量：
+#### Frontend Setup
+```bash
+cd frontend
+npm install
+npm start
+```
+
+</details>
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root:
 
 ```env
-# Claude API配置
+# Required: Anthropic API Configuration
 ANTHROPIC_API_KEY=your_claude_api_key_here
 CLAUDE_MODEL=claude-3-5-sonnet-20241022
 
-# 应用配置
+# Application Settings
 APP_NAME=Math & Physics Education AI
 DEBUG=false
-
-# 服务器配置
 HOST=0.0.0.0
 PORT=8000
 
-# CORS配置
+# Redis Configuration
+REDIS_URL=redis://redis:6379/0
+
+# CORS Settings
 ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Cache Settings
+KNOWLEDGE_CACHE_DIR=/app/data/knowledge_cache
 ```
 
-### Docker配置
+### Docker Configuration
 
-- `docker-compose.yml`: 开发环境配置
-- `docker-compose.prod.yml`: 生产环境配置
+- **`docker/docker-compose.yml`**: Development environment with hot reloading
+- **`docker/docker-compose.prod.yml`**: Production environment with optimized images
 
-## 🛠️ 开发指南
+## 🔧 Development
 
-### 项目结构
+### Adding New Features
 
+#### Backend API Endpoints
+1. Create new route in `backend/app/api/v1/`
+2. Implement business logic in `backend/app/services/`
+3. Add tests in `backend/tests/`
+
+#### Frontend Components
+1. Create component in `frontend/src/components/`
+2. Add styles in `frontend/src/styles/`
+3. Update main App.jsx if needed
+
+#### AI Tools
+1. Define tool schema in `backend/app/tools/schema/`
+2. Implement tool logic in `backend/app/tools/`
+3. Register tool in `backend/app/tools/manager.py`
+
+### Code Quality
+
+```bash
+# Backend linting and formatting
+cd backend
+black app/
+flake8 app/
+
+# Frontend linting
+cd frontend
+npm run lint
+npm run format
+
+# Run tests
+npm test
 ```
-edu-agent/
-├── backend/                 # 后端服务
-│   ├── app/
-│   │   ├── api/            # API路由
-│   │   ├── core/           # 核心配置
-│   │   ├── knowledge/      # 知识管理
-│   │   ├── services/       # 业务逻辑
-│   │   └── tools/          # 工具集成
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/               # 前端应用
-│   ├── src/
-│   │   ├── components/     # React组件
-│   │   ├── hooks/          # 自定义Hook
-│   │   └── styles/         # 样式文件
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── package.json
-├── .github/workflows/      # GitHub Actions
-├── docker-compose.yml      # Docker编排
-└── deploy.sh              # 一键部署脚本
-```
 
-### 添加新功能
+## 🚀 Deployment
 
-1. **后端API**: 在 `backend/app/api/` 中添加新的路由
-2. **前端组件**: 在 `frontend/src/components/` 中添加新的React组件
-3. **工具集成**: 在 `backend/app/tools/` 中添加新的工具
+### GitHub Actions CI/CD
 
-## 🚀 部署到生产环境
+The project includes automated CI/CD pipeline:
 
-### GitHub Actions自动部署
+1. **Continuous Integration**
+   - Automated testing for backend and frontend
+   - Code quality checks
+   - Security vulnerability scanning
 
-1. **设置GitHub Secrets**
+2. **Continuous Deployment**
+   - Docker image building and pushing to GitHub Container Registry
+   - Automated deployment to production environment
+
+#### Setting up CI/CD
+
+1. **Configure GitHub Secrets**
    ```
-   ANTHROPIC_API_KEY: 你的Claude API密钥
+   ANTHROPIC_API_KEY: Your Claude API key
    ```
 
-2. **推送代码触发部署**
+2. **Trigger deployment**
    ```bash
    git push origin main
    ```
 
-### 手动部署到服务器
+### Manual Production Deployment
 
-1. **在服务器上克隆仓库**
+#### On Google Cloud Platform
+
+1. **Create VM instance**
+   ```bash
+   # Install Docker and Docker Compose
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sh get-docker.sh
+   sudo usermod -aG docker $USER
+   
+   # Install Docker Compose
+   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   sudo chmod +x /usr/local/bin/docker-compose
+   ```
+
+2. **Deploy application**
    ```bash
    git clone https://github.com/ysong2023/edu-agent.git
    cd edu-agent
+   ./deploy.sh
    ```
 
-2. **设置环境变量**
-   ```bash
-   cp env.example .env
-   # 编辑 .env 文件
-   ```
+#### On AWS/Azure/Other Cloud Providers
 
-3. **使用生产配置部署**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
+Similar process - ensure Docker and Docker Compose are installed, then run the deployment script.
 
-## 📊 监控和日志
+## 📊 Monitoring & Maintenance
 
-### 查看日志
+### Health Checks
 ```bash
-# 查看所有服务日志
-docker-compose logs -f
+# Check service status
+docker-compose -f docker/docker-compose.prod.yml ps
 
-# 查看特定服务日志
-docker-compose logs -f backend
-docker-compose logs -f frontend
+# View logs
+docker-compose -f docker/docker-compose.prod.yml logs -f
+
+# Check API health
+curl http://localhost:8000/health
 ```
 
-### 服务状态
-```bash
-# 查看服务状态
-docker-compose ps
+### Performance Monitoring
+- Backend response times via FastAPI metrics
+- Frontend performance via React DevTools
+- Container resource usage via Docker stats
 
-# 查看服务健康状态
-docker-compose exec backend curl http://localhost:8000/health
-```
+### Backup & Recovery
+- Redis data persistence via Docker volumes
+- Application logs rotation and archival
+- Environment configuration backup
 
-## 🔒 安全考虑
+## 🔒 Security
 
-- API密钥通过环境变量管理，不提交到代码库
-- 代码执行在隔离的容器环境中
-- 使用HTTPS和安全的CORS配置
-- 定期更新依赖包以修复安全漏洞
+### Security Measures
+- **API Key Management**: Environment-based configuration, never committed to code
+- **Code Execution Isolation**: Sandboxed Python execution environment
+- **CORS Protection**: Configurable allowed origins
+- **Input Validation**: Comprehensive request validation using Pydantic
+- **Container Security**: Non-root user execution, minimal base images
 
-## 🤝 贡献指南
+### Security Best Practices
+- Regular dependency updates
+- Security vulnerability scanning in CI/CD
+- HTTPS enforcement in production
+- Rate limiting on API endpoints
 
-1. Fork本仓库
-2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建Pull Request
+## 📄 License
 
-## 📄 许可证
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-本项目基于MIT许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+## 📞 Support & Contact
 
-## 📞 支持
-
-如果您遇到问题或有建议，请：
-
-1. 查看 [Issues](https://github.com/ysong2023/edu-agent/issues)
-2. 创建新的Issue
-3. 联系维护者
+### Maintainers
+- **Primary Maintainer**: [@ysong2023](https://github.com/ysong2023)
 
 ---
 
-**愉快的学习！🎓** 
+<div align="center">
+
+**Happy Learning! 🎓✨**
+
+*Empowering education through AI-driven interactive learning experiences*
+
+</div> 
